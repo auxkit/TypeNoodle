@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest, macos-13]
+        include:
+          - os: ubuntu-22.04
+            qt_arch: gcc_64
+            artifact_name: TypeNoodle-Linux
+          - os: windows-latest
+            qt_arch: win64_msvc2019_64
+            artifact_name: TypeNoodle-Windows
+          - os: macos-13
+            qt_arch: clang_64
+            artifact_name: TypeNoodle-macOS
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.6.1'
+        host: ${{ runner.os == 'Linux' && 'linux' || runner.os == 'Windows' && 'windows' || 'mac' }}
+        target: 'desktop'
+        arch: ${{ matrix.qt_arch }}
+        modules: 'qtquick qtquickcontrols2'
+        cache: true
+
+    - name: Install Linux dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libgl1-mesa-dev \
+          libxkbcommon-x11-0 \
+          libxcb-icccm4 \
+          libxcb-image0 \
+          libxcb-keysyms1 \
+          libxcb-render-util0 \
+          libxcb-xinerama0 \
+          libfontconfig1 \
+          libdbus-1-3
+
+    - name: Configure CMake (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Configure CMake (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        cmake -B build -G "Visual Studio 17 2022" -A x64
+
+    - name: Build
+      run: |
+        cmake --build build --config Release
+
+    - name: Create artifact directory
+      run: |
+        mkdir -p artifact
+
+    - name: Package (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cp build/typenoodle artifact/
+        cd artifact
+        tar -czf ${{ matrix.artifact_name }}.tar.gz typenoodle
+
+    - name: Package (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        Copy-Item build/Release/typenoodle.exe artifact/
+        cd artifact
+        Compress-Archive -Path typenoodle.exe -DestinationPath ${{ matrix.artifact_name }}.zip
+
+    - name: Package (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        cp -r build/typenoodle.app artifact/
+        cd artifact
+        tar -czf ${{ matrix.artifact_name }}.tar.gz typenoodle.app
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: |
+          artifact/*.tar.gz
+          artifact/*.zip
+        retention-days: 30
