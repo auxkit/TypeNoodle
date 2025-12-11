@@ -79,6 +79,7 @@ qt_add_qml_module(${PROJECT_NAME}
     VERSION ${CURRENT_VERSION}
     QML_FILES
         qml/Main.qml
+        qml/LoadingWindow.qml
         qml/Theme.qml
         qml/components/FontCard.qml
         qml/components/FontPreviewPane.qml

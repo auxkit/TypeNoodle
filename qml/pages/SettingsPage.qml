@@ -30,16 +30,17 @@ Item {
                 }
 
                 Button {
+                    id: closeButton
                     text: "Close"
                     onClicked: root.closeRequested()
 
                     background: Rectangle {
-                        color: parent.hovered ? Theme.surface0 : Theme.cardBackground
+                        color: closeButton.hovered ? Theme.surface0 : Theme.cardBackground
                         radius: Theme.radiusMd
                     }
 
                     contentItem: Text {
-                        text: parent.text
+                        text: closeButton.text
                         color: Theme.foreground
                         font.pixelSize: Theme.fontSizeMd
                         horizontalAlignment: Text.AlignHCenter
@@ -90,6 +91,7 @@ Item {
                                 }
 
                                 Switch {
+                                    id: themeSwitch
                                     checked: true
                                     enabled: false // Placeholder - theme switching not implemented yet
 
@@ -97,10 +99,10 @@ Item {
                                         width: 48
                                         height: 24
                                         radius: 12
-                                        color: parent.checked ? Theme.primary : Theme.surface1
+                                        color: themeSwitch.checked ? Theme.primary : Theme.surface1
 
                                         Rectangle {
-                                            x: parent.parent.checked ? parent.width - width - 2 : 2
+                                            x: themeSwitch.checked ? parent.width - width - 2 : 2
                                             y: 2
                                             width: 20
                                             height: 20
@@ -166,6 +168,7 @@ Item {
                             }
 
                             SpinBox {
+                                id: iconSizeSpinBox
                                 from: 12
                                 to: 144
                                 value: 48
@@ -176,12 +179,12 @@ Item {
                                 }
 
                                 contentItem: TextInput {
-                                    text: parent.value
+                                    text: iconSizeSpinBox.value
                                     color: Theme.foreground
                                     font.pixelSize: Theme.fontSizeMd
                                     horizontalAlignment: Qt.AlignHCenter
                                     verticalAlignment: Qt.AlignVCenter
-                                    readOnly: !parent.editable
+                                    readOnly: !iconSizeSpinBox.editable
                                 }
                             }
                         }

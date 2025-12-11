@@ -5,19 +5,12 @@ import TypeNoodle
 
 ApplicationWindow {
     id: window
-    visible: true
+    visible: false  // Start hidden, will be shown after font loading
     width: 1280
     height: 800
     title: "TypeNoodle - Font Manager"
 
     color: Theme.background
-
-    Component.onCompleted: {
-        // Initial font refresh
-        if (FontManager) {
-            FontManager.refreshFonts();
-        }
-    }
 
     ColumnLayout {
         anchors.fill: parent
