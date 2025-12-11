@@ -12,37 +12,6 @@ public:
 
     static std::shared_ptr<spdlog::logger>& get() { return s_logger; }
 
-    // Convenience macros-like functions
-    template<typename... Args>
-    static void trace(Args&&... args) {
-        s_logger->trace(std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    static void debug(Args&&... args) {
-        s_logger->debug(std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    static void info(Args&&... args) {
-        s_logger->info(std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    static void warn(Args&&... args) {
-        s_logger->warn(std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    static void error(Args&&... args) {
-        s_logger->error(std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    static void critical(Args&&... args) {
-        s_logger->critical(std::forward<Args>(args)...);
-    }
-
 private:
     Logger() = default;
     static std::shared_ptr<spdlog::logger> s_logger;
@@ -50,10 +19,10 @@ private:
 
 } // namespace TypeNoodle
 
-// Convenience macros
-#define TN_TRACE(...) ::TypeNoodle::Logger::trace(__VA_ARGS__)
-#define TN_DEBUG(...) ::TypeNoodle::Logger::debug(__VA_ARGS__)
-#define TN_INFO(...) ::TypeNoodle::Logger::info(__VA_ARGS__)
-#define TN_WARN(...) ::TypeNoodle::Logger::warn(__VA_ARGS__)
-#define TN_ERROR(...) ::TypeNoodle::Logger::error(__VA_ARGS__)
-#define TN_CRITICAL(...) ::TypeNoodle::Logger::critical(__VA_ARGS__)
+// Use spdlog macros directly with runtime format strings to avoid consteval issues
+#define TN_TRACE(...) SPDLOG_LOGGER_TRACE(::TypeNoodle::Logger::get(), __VA_ARGS__)
+#define TN_DEBUG(...) SPDLOG_LOGGER_DEBUG(::TypeNoodle::Logger::get(), __VA_ARGS__)
+#define TN_INFO(...) SPDLOG_LOGGER_INFO(::TypeNoodle::Logger::get(), __VA_ARGS__)
+#define TN_WARN(...) SPDLOG_LOGGER_WARN(::TypeNoodle::Logger::get(), __VA_ARGS__)
+#define TN_ERROR(...) SPDLOG_LOGGER_ERROR(::TypeNoodle::Logger::get(), __VA_ARGS__)
+#define TN_CRITICAL(...) SPDLOG_LOGGER_CRITICAL(::TypeNoodle::Logger::get(), __VA_ARGS__)

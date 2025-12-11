@@ -161,4 +161,12 @@ QString Config::collectionsFilePath() const {
     return configDir + "/collections.json";
 }
 
+bool Config::isRunningOnApple() const {
+#ifdef Q_OS_MACOS
+    return true;
+#else
+    return false;
+#endif
+}
+
 } // namespace TypeNoodle

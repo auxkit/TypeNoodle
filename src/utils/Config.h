@@ -40,6 +40,8 @@ public:
     // Collections (stored in separate file, managed by FontManager)
     QString collectionsFilePath() const;
 
+    bool isRunningOnApple() const;
+
 private:
     Config();
     ~Config();

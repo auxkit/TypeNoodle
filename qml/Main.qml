@@ -15,7 +15,7 @@ ApplicationWindow {
     Component.onCompleted: {
         // Initial font refresh
         if (FontManager) {
-            FontManager.refreshFonts()
+            FontManager.refreshFonts();
         }
     }
 
@@ -28,11 +28,11 @@ ApplicationWindow {
             Layout.fillWidth: true
             onRefreshRequested: {
                 if (FontManager) {
-                    FontManager.refreshFonts()
+                    FontManager.refreshFonts();
                 }
             }
             onSettingsRequested: {
-                stackView.push(settingsPage)
+                stackView.push(settingsPage);
             }
         }
 
@@ -46,22 +46,22 @@ ApplicationWindow {
             Sidebar {
                 id: sidebar
                 Layout.fillHeight: true
-                collectionModel: collectionModel
+                collectionModel: _collectionModel
 
                 onShowAllFonts: {
                     if (fontListModel) {
-                        fontListModel.filterCollection = ""
+                        fontListModel.filterCollection = "";
                     }
                 }
 
-                onCollectionSelected: function(collectionId) {
+                onCollectionSelected: function (collectionId) {
                     if (fontListModel) {
-                        fontListModel.filterCollection = collectionId
+                        fontListModel.filterCollection = collectionId;
                     }
                 }
 
                 onCreateCollectionRequested: {
-                    createCollectionDialog.open()
+                    createCollectionDialog.open();
                 }
             }
 
@@ -84,7 +84,7 @@ ApplicationWindow {
     Component {
         id: libraryPage
         LibraryPage {
-            fontListModel: fontListModel
+            fontListModel: _fontListModel
         }
     }
 
@@ -213,20 +213,17 @@ ApplicationWindow {
 
             onAccepted: {
                 if (collectionNameField.text.trim() !== "" && collectionModel) {
-                    collectionModel.createCollection(
-                        collectionNameField.text,
-                        collectionDescField.text
-                    )
-                    collectionNameField.text = ""
-                    collectionDescField.text = ""
-                    createCollectionDialog.close()
+                    collectionModel.createCollection(collectionNameField.text, collectionDescField.text);
+                    collectionNameField.text = "";
+                    collectionDescField.text = "";
+                    createCollectionDialog.close();
                 }
             }
 
             onRejected: {
-                collectionNameField.text = ""
-                collectionDescField.text = ""
-                createCollectionDialog.close()
+                collectionNameField.text = "";
+                collectionDescField.text = "";
+                createCollectionDialog.close();
             }
         }
     }

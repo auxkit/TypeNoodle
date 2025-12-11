@@ -36,28 +36,24 @@ int main(int argc, char *argv[]) {
     // Create QML engine
     QQmlApplicationEngine engine;
 
-    // Register types
-    qmlRegisterSingletonType(QUrl("qrc:/qt/qml/TypeNoodle/Theme.qml"), "TypeNoodle", 1, 0, "Theme");
-
     // Expose C++ objects to QML
     engine.rootContext()->setContextProperty("FontManager", &fontManager);
-    engine.rootContext()->setContextProperty("fontListModel", &fontListModel);
-    engine.rootContext()->setContextProperty("collectionModel", &collectionModel);
+    engine.rootContext()->setContextProperty("_fontListModel", &fontListModel);
+    engine.rootContext()->setContextProperty("_collectionModel", &collectionModel);
 
-    // Load main QML file
-    const QUrl url(u"qrc:/qt/qml/TypeNoodle/Main.qml"_qs);
-
+    // Load main QML file from module
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-                     &app, [url](QObject *obj, const QUrl &objUrl) {
-        if (!obj && url == objUrl) {
+                     &app, [](QObject *obj, const QUrl &objUrl) {
+        if (!obj) {
             TN_ERROR("Failed to load QML");
             QCoreApplication::exit(-1);
         }
     }, Qt::QueuedConnection);
 
-    engine.load(url);
+    engine.loadFromModule("TypeNoodle", "Main");
 
     if (engine.rootObjects().isEmpty()) {
+        // TN_ERROR(engine.rootObjects());
         TN_ERROR("No root objects loaded from QML");
         return -1;
     }

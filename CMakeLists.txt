@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-includes")
-include(GetVersion) # gives us the VERSION variable :D
-
+include(GetVersion)
 project(TypeNoodle VERSION ${CURRENT_VERSION} LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -11,7 +9,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# Find Qt6
+# Build type defaults to Release
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
+# Qt6 packages
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Gui
@@ -20,122 +23,122 @@ find_package(Qt6 REQUIRED COMPONENTS
     QuickControls2
 )
 
-set(QT_QML_GENERATE_QMLLS_INI ON)
-qt_policy(SET QTP0001 NEW)
+qt_policy(SET QTP0004 NEW)
+# qt_policy(SET QMP0174 )
 
-# Add external dependencies
+qt_standard_project_setup(REQUIRES 6.5)
+
+# External dependencies
+add_subdirectory(external/freetype)
 add_subdirectory(external/spdlog)
-add_subdirectory(external/json)
 
-# Option to use FreeType (OFF by default, use Qt's font APIs first)
-option(USE_FREETYPE "Use FreeType for font parsing" OFF)
-if(USE_FREETYPE)
-    add_subdirectory(external/freetype)
-endif()
+# nlohmann_json is header-only, just need to expose includes
+add_library(nlohmann_json INTERFACE)
+target_include_directories(nlohmann_json INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/json/include
+)
 
 # Source files
-file(GLOB_RECURSE SOURCES
-    "src/*.cpp"
-    "src/*.cxx"
+set(SOURCES
+    src/main.cpp
+    src/core/FontCollection.cpp
+    src/core/FontInfo.cpp
+    src/core/FontManager.cpp
+    src/core/PlatformFonts.cpp
+    src/models/CollectionModel.cpp
+    src/models/FontListModel.cpp
+    src/utils/Config.cpp
+    src/utils/Logger.cpp
 )
 
-file(GLOB_RECURSE HEADERS
-    "src/*.h"
-    "src/*.hpp"
+set(HEADERS
+    src/core/FontCollection.h
+    src/core/FontInfo.h
+    src/core/FontManager.h
+    src/core/PlatformFonts.h
+    src/models/CollectionModel.h
+    src/models/FontListModel.h
+    src/utils/Config.h
+    src/utils/Logger.h
 )
 
-# QML files
-file(GLOB_RECURSE QML_FILES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "qml/*.qml"
-)
-
-# Resources
-set(RESOURCES
+# Create the executable
+qt_add_executable(${PROJECT_NAME}
+    ${SOURCES}
+    ${HEADERS}
     resources/resources.qrc
 )
 
-# Create executable with QML module
-qt_add_executable(typenoodle
-    ${SOURCES}
-    ${HEADERS}
-    ${RESOURCES}
+# QML modules (set theme as singleton)
+set_source_files_properties(qml/Theme.qml PROPERTIES
+    QT_QML_SINGLETON_TYPE TRUE
+)
+
+qt_add_qml_module(${PROJECT_NAME}
+    URI TypeNoodle
+    VERSION ${CURRENT_VERSION}
+    QML_FILES
+        qml/Main.qml
+        qml/Theme.qml
+        qml/components/FontCard.qml
+        qml/components/FontPreviewPane.qml
+        qml/components/SearchBar.qml
+        qml/components/Sidebar.qml
+        qml/components/TopBar.qml
+        qml/pages/LibraryPage.qml
+        qml/pages/SettingsPage.qml
 )
 
 
-qt_add_qml_module(typenoodle
-    URI TypeNoodle
-    VERSION ${CURRENT_VERSION}
-    QML_FILES ${QML_FILES}
+# Include directories
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/models
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
 )
 
 # Link libraries
-target_link_libraries(typenoodle PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
     Qt6::Quick
     Qt6::QuickControls2
+    freetype
     spdlog::spdlog
-    nlohmann_json::nlohmann_json
-)
-
-if(USE_FREETYPE)
-    target_link_libraries(typenoodle PRIVATE freetype)
-    target_compile_definitions(typenoodle PRIVATE USE_FREETYPE)
-endif()
-
-# Include directories
-target_include_directories(typenoodle PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
-
-# Finalize the executable
-qt_finalize_target(typenoodle)
-
-# Copy TypeNoodle QML module metadata to Resources
-add_custom_command(TARGET typenoodle POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-        "$<TARGET_BUNDLE_DIR:typenoodle>/Contents/Resources/qml/TypeNoodle"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_CURRENT_BINARY_DIR}/TypeNoodle/qmldir"
-        "$<TARGET_BUNDLE_DIR:typenoodle>/Contents/Resources/qml/TypeNoodle/qmldir"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_CURRENT_BINARY_DIR}/TypeNoodle/typenoodle.qmltypes"
-        "$<TARGET_BUNDLE_DIR:typenoodle>/Contents/Resources/qml/TypeNoodle/typenoodle.qmltypes"
-    COMMENT "Copying TypeNoodle QML module metadata to Resources"
+    nlohmann_json
 )
 
 # Platform-specific settings
-if(WIN32)
-    # Windows-specific settings
-    set_target_properties(typenoodle PROPERTIES
-        WIN32_EXECUTABLE ON
-    )
-elseif(APPLE)
-    # macOS-specific settings
-    set_target_properties(typenoodle PROPERTIES
-        MACOSX_BUNDLE ON
+if(APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist
+        MACOSX_BUNDLE_BUNDLE_NAME "TypeNoodle"
+        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.typenoodle.app"
+    )
+elseif(WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        WIN32_EXECUTABLE TRUE
     )
 endif()
 
-# Install targets
-install(TARGETS typenoodle
+# Install rules
+include(GNUInstallDirs)
+install(TARGETS ${PROJECT_NAME}
     BUNDLE DESTINATION .
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-# Qt deployment
-if(WIN32)
-    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS ${Qt6_DIR}/../../../bin)
-    add_custom_command(TARGET typenoodle POST_BUILD
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} --qmldir ${CMAKE_SOURCE_DIR}/qml $<TARGET_FILE:typenoodle>
-    )
-elseif(APPLE)
-    find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS ${Qt6_DIR}/../../../bin)
-    add_custom_command(TARGET typenoodle POST_BUILD
-        COMMAND ${MACDEPLOYQT_EXECUTABLE} $<TARGET_BUNDLE_DIR:typenoodle> -qmldir=${CMAKE_SOURCE_DIR}/qml
-    )
-endif()
+# For Qt deployment
+qt_generate_deploy_qml_app_script(
+    TARGET ${PROJECT_NAME}
+    OUTPUT_SCRIPT deploy_script
+    MACOS_BUNDLE_POST_BUILD
+    NO_UNSUPPORTED_PLATFORM_ERROR
+    DEPLOY_USER_QML_MODULES_ON_UNSUPPORTED_PLATFORM
+)
+install(SCRIPT ${deploy_script})

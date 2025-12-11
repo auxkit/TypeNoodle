@@ -1,0 +1,106 @@
+.
+├── APP_VERSION
+├── cmake-includes
+│   └── GetVersion.cmake
+├── CMakeLists.txt
+├── external
+│   ├── freetype
+│   │   ├── autogen.sh
+│   │   ├── builds
+│   │   ├── CMakeLists.txt
+│   │   ├── configure
+│   │   ├── devel
+│   │   ├── docs
+│   │   ├── include
+│   │   ├── LICENSE.TXT
+│   │   ├── Makefile
+│   │   ├── meson_options.txt
+│   │   ├── meson.build
+│   │   ├── modules.cfg
+│   │   ├── MSBuild.rsp
+│   │   ├── MSBuild.sln
+│   │   ├── objs
+│   │   ├── README
+│   │   ├── README.git
+│   │   ├── src
+│   │   ├── subprojects
+│   │   ├── tests
+│   │   └── vms_make.com
+│   ├── json
+│   │   ├── BUILD.bazel
+│   │   ├── ChangeLog.md
+│   │   ├── CITATION.cff
+│   │   ├── cmake
+│   │   ├── CMakeLists.txt
+│   │   ├── docs
+│   │   ├── FILES.md
+│   │   ├── include
+│   │   ├── LICENSE.MIT
+│   │   ├── LICENSES
+│   │   ├── Makefile
+│   │   ├── meson.build
+│   │   ├── MODULE.bazel
+│   │   ├── nlohmann_json.natvis
+│   │   ├── Package.swift
+│   │   ├── README.md
+│   │   ├── single_include
+│   │   ├── src
+│   │   ├── tests
+│   │   └── tools
+│   └── spdlog
+│       ├── appveyor.yml
+│       ├── bench
+│       ├── cmake
+│       ├── CMakeLists.txt
+│       ├── example
+│       ├── include
+│       ├── INSTALL
+│       ├── LICENSE
+│       ├── logos
+│       ├── README.md
+│       ├── scripts
+│       ├── src
+│       └── tests
+├── LICENSE
+├── qml
+│   ├── components
+│   │   ├── FontCard.qml
+│   │   ├── FontPreviewPane.qml
+│   │   ├── SearchBar.qml
+│   │   ├── Sidebar.qml
+│   │   └── TopBar.qml
+│   ├── Main.qml
+│   ├── pages
+│   │   ├── LibraryPage.qml
+│   │   └── SettingsPage.qml
+│   └── Theme.qml
+├── README.md
+├── resources
+│   ├── fonts
+│   ├── icons
+│   ├── Info.plist
+│   └── resources.qrc
+├── src
+│   ├── core
+│   │   ├── FontCollection.cpp
+│   │   ├── FontCollection.h
+│   │   ├── FontInfo.cpp
+│   │   ├── FontInfo.h
+│   │   ├── FontManager.cpp
+│   │   ├── FontManager.h
+│   │   ├── PlatformFonts.cpp
+│   │   └── PlatformFonts.h
+│   ├── main.cpp
+│   ├── models
+│   │   ├── CollectionModel.cpp
+│   │   ├── CollectionModel.h
+│   │   ├── FontListModel.cpp
+│   │   └── FontListModel.h
+│   └── utils
+│       ├── Config.cpp
+│       ├── Config.h
+│       ├── Logger.cpp
+│       └── Logger.h
+└── tree.txt
+
+40 directories, 64 files

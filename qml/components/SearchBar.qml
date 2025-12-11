@@ -1,14 +1,13 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import TypeNoodle
 
 Rectangle {
     id: root
 
     property alias text: searchField.text
     property alias placeholderText: searchField.placeholderText
-
-    signal textChanged()
 
     color: Theme.cardBackground
     radius: Theme.radiusMd
