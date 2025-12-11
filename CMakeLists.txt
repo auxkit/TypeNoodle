@@ -8,6 +8,11 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# Set Qt policy for QML module resource prefix
+if(POLICY QTP0001)
+    qt_policy(SET QTP0001 NEW)
+endif()
+
 # Find Qt6
 find_package(Qt6 REQUIRED COMPONENTS
     Core
@@ -28,27 +33,14 @@ if(USE_FREETYPE)
 endif()
 
 # Source files
-set(SOURCES
-    src/main.cpp
-    src/core/FontInfo.cpp
-    src/core/FontManager.cpp
-    src/core/FontCollection.cpp
-    src/core/PlatformFonts.cpp
-    src/models/FontListModel.cpp
-    src/models/CollectionModel.cpp
-    src/utils/Config.cpp
-    src/utils/Logger.cpp
+file(GLOB_RECURSE SOURCES
+    "src/**/*.cpp"
+    "src/**/*.cxx"
 )
 
-set(HEADERS
-    src/core/FontInfo.h
-    src/core/FontManager.h
-    src/core/FontCollection.h
-    src/core/PlatformFonts.h
-    src/models/FontListModel.h
-    src/models/CollectionModel.h
-    src/utils/Config.h
-    src/utils/Logger.h
+file(GLOB_RECURSE HEADERS
+    "src/**/*.h"
+    "src/**/*.hpp"
 )
 
 # QML files
@@ -76,6 +68,8 @@ qt_add_executable(typenoodle
     ${RESOURCES}
 )
 
+set(QT_QML_GENERATE_QMLLS_INI ON)
+
 qt_add_qml_module(typenoodle
     URI TypeNoodle
     VERSION 1.0
@@ -101,6 +95,22 @@ endif()
 # Include directories
 target_include_directories(typenoodle PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+# Finalize the executable
+qt_finalize_target(typenoodle)
+
+# Copy TypeNoodle QML module metadata to Resources
+add_custom_command(TARGET typenoodle POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        "$<TARGET_BUNDLE_DIR:typenoodle>/Contents/Resources/qml/TypeNoodle"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_BINARY_DIR}/TypeNoodle/qmldir"
+        "$<TARGET_BUNDLE_DIR:typenoodle>/Contents/Resources/qml/TypeNoodle/qmldir"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_BINARY_DIR}/TypeNoodle/typenoodle.qmltypes"
+        "$<TARGET_BUNDLE_DIR:typenoodle>/Contents/Resources/qml/TypeNoodle/typenoodle.qmltypes"
+    COMMENT "Copying TypeNoodle QML module metadata to Resources"
 )
 
 # Platform-specific settings
