@@ -44,7 +44,7 @@ A modern, cross-platform desktop font manager built with Qt 6 (QML + C++) and CM
 ### 1. Clone the Repository
 
 ```bash
-git clone --recursive https://github.com/yourusername/TypeNoodle.git
+git clone --recursive https://github.com/auxkit/TypeNoodle.git
 cd TypeNoodle
 ```
 
@@ -91,6 +91,8 @@ cmake --build . --config Release
 
 ### 4. Run
 
+Use a CMake extension for VSCode *or run*:
+
 **Linux:**
 ```bash
 ./typenoodle
@@ -104,29 +106,6 @@ Release\typenoodle.exe
 **macOS:**
 ```bash
 open typenoodle.app
-```
-
-## Project Structure
-
-```
-TypeNoodle/
-├── CMakeLists.txt           # Main build configuration
-├── .github/workflows/       # CI/CD workflows
-├── external/                # Git submodules
-│   ├── spdlog/             # Logging library
-│   ├── json/               # JSON for C++
-│   └── freetype/           # Font parsing (optional)
-├── src/                    # C++ source code
-│   ├── main.cpp
-│   ├── core/              # Core font management
-│   ├── models/            # Qt models for QML
-│   └── utils/             # Utilities (config, logging)
-├── qml/                   # QML UI files
-│   ├── Main.qml
-│   ├── Theme.qml
-│   ├── components/
-│   └── pages/
-└── resources/            # Icons, fonts, etc.
 ```
 
 ## Configuration
@@ -147,7 +126,7 @@ TypeNoodle stores its configuration in platform-specific locations:
 
 ### Code Style
 
-- **C++:** Modern C++20, follow Google C++ Style Guide
+- **C++:** Modern C++23
 - **QML:** Keep logic minimal, delegate to C++ backend
 - **Naming:** PascalCase for types, camelCase for properties/functions
 
@@ -174,7 +153,7 @@ TypeNoodle uses GitHub Actions for continuous integration:
 
 ## License
 
-[Add your license here]
+MIT License, see LICENSE.md for more
 
 ## Contributing
 
@@ -189,4 +168,4 @@ Contributions are welcome! Please read the contributing guidelines before submit
 
 ## Support
 
-For bugs and feature requests, please [open an issue](https://github.com/yourusername/TypeNoodle/issues).
+For bugs and feature requests, please [open an issue](https://github.com/auxkit/TypeNoodle/issues).
