@@ -1,17 +1,15 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(TypeNoodle VERSION 1.0.0 LANGUAGES CXX)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-includes")
+include(GetVersion) # gives us the VERSION variable :D
 
-set(CMAKE_CXX_STANDARD 20)
+project(TypeNoodle VERSION ${CURRENT_VERSION} LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-
-# Set Qt policy for QML module resource prefix
-if(POLICY QTP0001)
-    qt_policy(SET QTP0001 NEW)
-endif()
 
 # Find Qt6
 find_package(Qt6 REQUIRED COMPONENTS
@@ -21,6 +19,9 @@ find_package(Qt6 REQUIRED COMPONENTS
     Quick
     QuickControls2
 )
+
+set(QT_QML_GENERATE_QMLLS_INI ON)
+qt_policy(SET QTP0001 NEW)
 
 # Add external dependencies
 add_subdirectory(external/spdlog)
@@ -34,26 +35,19 @@ endif()
 
 # Source files
 file(GLOB_RECURSE SOURCES
-    "src/**/*.cpp"
-    "src/**/*.cxx"
+    "src/*.cpp"
+    "src/*.cxx"
 )
 
 file(GLOB_RECURSE HEADERS
-    "src/**/*.h"
-    "src/**/*.hpp"
+    "src/*.h"
+    "src/*.hpp"
 )
 
 # QML files
-set(QML_FILES
-    qml/Main.qml
-    qml/Theme.qml
-    qml/components/FontCard.qml
-    qml/components/FontPreviewPane.qml
-    qml/components/Sidebar.qml
-    qml/components/SearchBar.qml
-    qml/components/TopBar.qml
-    qml/pages/LibraryPage.qml
-    qml/pages/SettingsPage.qml
+file(GLOB_RECURSE QML_FILES
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "qml/*.qml"
 )
 
 # Resources
@@ -68,11 +62,10 @@ qt_add_executable(typenoodle
     ${RESOURCES}
 )
 
-set(QT_QML_GENERATE_QMLLS_INI ON)
 
 qt_add_qml_module(typenoodle
     URI TypeNoodle
-    VERSION 1.0
+    VERSION ${CURRENT_VERSION}
     QML_FILES ${QML_FILES}
 )
 
