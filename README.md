@@ -4,7 +4,7 @@ A modern, cross-platform desktop font manager built with Qt 6 (QML + C++) and CM
 
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-blue)
 ![Qt](https://img.shields.io/badge/Qt-6.6+-green)
-![C++](https://img.shields.io/badge/C%2B%2B-20-orange)
+![C++](https://img.shields.io/badge/C%2B%2B-23-orange)
 
 ## Features
 
