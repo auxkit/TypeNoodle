@@ -9,6 +9,16 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# for auto version.h gen
+set (PROJECT_VERSION ${CURRENT_VERSION})
+set (PROJECT_NAME "TypeNoodle")
+string(TIMESTAMP TODAY "%d/%m/%Y")
+set (PROJECT_BUILD_DATE ${TODAY})
+set (PROJECT_ORG_DOMAIN "typenoodle.app")
+set (PROJECT_ORG_NAME "TypeNoodle")
+
+configure_file (src/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/version.h @ONLY)
+
 # Build type defaults to Release
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)

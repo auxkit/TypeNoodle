@@ -4,6 +4,7 @@
 #include <QQuickStyle>
 #include <QIcon>
 
+#include "version.h"
 #include "core/FontManager.h"
 #include "models/FontListModel.h"
 #include "models/CollectionModel.h"
@@ -13,17 +14,17 @@
 int main(int argc, char *argv[]) {
     // Initialize logger first
     TypeNoodle::Logger::initialize();
-    TN_INFO("TypeNoodle starting...");
+    TN_INFO("Application starting...");
 
     // Load configuration
     TypeNoodle::Config::instance().load();
 
     // Set up Qt application
     QGuiApplication app(argc, argv);
-    app.setOrganizationName("TypeNoodle");
-    app.setOrganizationDomain("typenoodle.app");
-    app.setApplicationName("TypeNoodle");
-    app.setApplicationVersion("1.0.0");
+    app.setOrganizationName(QString(PROJECT_ORG_NAME));
+    app.setOrganizationDomain(QString(PROJECT_ORG_DOMAIN));
+    app.setApplicationName(QString(PROJECT_NAME));
+    app.setApplicationVersion(QString(PROJECT_VERSION));
 
     // Set QuickControls style
     QQuickStyle::setStyle("Basic");
