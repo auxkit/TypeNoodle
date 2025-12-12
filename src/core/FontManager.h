@@ -3,6 +3,8 @@
 #include "FontInfo.h"
 #include "FontCollection.h"
 #include <QObject>
+#include <QThread>
+#include <QMutex>
 #include <vector>
 #include <memory>
 
@@ -10,6 +12,8 @@ namespace TypeNoodle {
 
 class FontManager : public QObject {
     Q_OBJECT
+    Q_PROPERTY(bool isScanning READ isScanning NOTIFY isScanningChanged)
+    Q_PROPERTY(QString scanStatus READ scanStatus NOTIFY scanStatusChanged)
 
 public:
     explicit FontManager(QObject* parent = nullptr);
@@ -27,6 +31,10 @@ public:
     const std::vector<FontInfo>& fonts() const { return m_fonts; }
     FontInfo* findFont(const QString& fontId);
     const FontInfo* findFont(const QString& fontId) const;
+    
+    // Scanning status
+    bool isScanning() const { return m_isScanning; }
+    QString scanStatus() const { return m_scanStatus; }
 
     // Collection management
     FontCollection& fontCollection() { return m_fontCollection; }
@@ -41,14 +49,30 @@ signals:
     void fontsChanged();
     void collectionsChanged();
     void fontActivationChanged(const QString& fontId, bool active);
+    void isScanningChanged();
+    void scanStatusChanged();
+    void scanCompleted();
+
+private slots:
+    void onScanFinished(const std::vector<FontInfo>& fonts);
+    void processNextBatch();
+    void finishScanning();
 
 private:
     void scanSystemFonts();
-    void scanDirectory(const QString& directory);
-    void addFontFromFile(const QString& filePath);
+    void scanDirectory(const QString& directory, std::vector<FontInfo>& fonts);
+    void addFontFromFile(const QString& filePath, std::vector<FontInfo>& fonts);
 
     std::vector<FontInfo> m_fonts;
     FontCollection m_fontCollection;
+    
+    bool m_isScanning = false;
+    QString m_scanStatus;
+    QMutex m_mutex;
+    
+    // Batch processing
+    QStringList m_pendingFiles;
+    int m_currentFileIndex = 0;
 
     static FontManager* s_instance;
 };

@@ -12,10 +12,16 @@ ApplicationWindow {
 
     color: Theme.background
 
-    Component.onCompleted: {
-        // Initial font refresh
-        if (FontManager) {
-            FontManager.refreshFonts();
+    // Defer font loading until after UI is fully rendered
+    Timer {
+        id: startupTimer
+        interval: 100  // Small delay to let UI render first
+        running: true
+        repeat: false
+        onTriggered: {
+            if (FontManager) {
+                FontManager.refreshFonts();
+            }
         }
     }
 

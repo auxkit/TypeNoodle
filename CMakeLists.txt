@@ -31,6 +31,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     Widgets
     Quick
     QuickControls2
+    Concurrent
 )
 
 qt_policy(SET QTP0004 NEW)
@@ -59,6 +60,7 @@ set(SOURCES
     src/models/FontListModel.cpp
     src/utils/Config.cpp
     src/utils/Logger.cpp
+    src/utils/SettingsManager.cpp
 )
 
 set(HEADERS
@@ -70,6 +72,7 @@ set(HEADERS
     src/models/FontListModel.h
     src/utils/Config.h
     src/utils/Logger.h
+    src/utils/SettingsManager.h
 )
 
 # Create the executable
@@ -115,6 +118,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Widgets
     Qt6::Quick
     Qt6::QuickControls2
+    Qt6::Concurrent
     freetype
     spdlog::spdlog
     nlohmann_json

@@ -1,8 +1,10 @@
 #include "FontManager.h"
 #include "PlatformFonts.h"
+#include "../utils/Config.h"
 #include <QFontDatabase>
 #include <QDir>
 #include <QDirIterator>
+#include <QFileInfo>
 #include <algorithm>
 
 namespace TypeNoodle {
@@ -23,108 +25,134 @@ FontManager* FontManager::instance() {
 }
 
 void FontManager::refreshFonts() {
+    if (m_isScanning) {
+        return;
+    }
+    
+    m_isScanning = true;
+    m_scanStatus = "Loading system fonts...";
     m_fonts.clear();
-    scanSystemFonts();
+    emit isScanningChanged();
+    emit scanStatusChanged();
+    
+    // Use Qt's font database - this is FAST because it reads from the system font cache
+    // No need to scan files manually - Qt already knows all installed fonts
+    const QStringList families = QFontDatabase::families();
+    
+    for (const QString& family : families) {
+        const QStringList styles = QFontDatabase::styles(family);
+        for (const QString& style : styles) {
+            FontInfo info;
+            info.family = family;
+            info.style = style;
+            info.filePath = QString(); // Not available without file scanning
+            info.format = "System";
+            info.weight = QFontDatabase::weight(family, style);
+            info.italic = QFontDatabase::italic(family, style);
+            m_fonts.push_back(info);
+        }
+    }
+    
+    // Now scan custom/watch directories - these we DO scan for files
+    const QStringList customDirs = Config::instance().getCustomFontDirectories();
+    if (!customDirs.isEmpty()) {
+        m_scanStatus = "Scanning watch folders...";
+        emit scanStatusChanged();
+        
+        for (const QString& dir : customDirs) {
+            scanDirectory(dir, m_fonts);
+        }
+    }
+    
+    m_isScanning = false;
+    m_scanStatus = QString("Loaded %1 fonts").arg(m_fonts.size());
+    m_pendingFiles.clear();
+    
+    emit isScanningChanged();
+    emit scanStatusChanged();
     emit fontsChanged();
+    emit scanCompleted();
+}
+
+void FontManager::processNextBatch() {
+    // No longer used
+}
+
+void FontManager::finishScanning() {
+    // No longer used
+}
+
+void FontManager::onScanFinished(const std::vector<FontInfo>& fonts) {
+    // No longer used
 }
 
 void FontManager::scanSystemFonts() {
-    // Get all font directories
-    QStringList directories = PlatformFonts::systemFontDirectories();
-
-    // Scan each directory
-    for (const QString& dir : directories) {
-        scanDirectory(dir);
-    }
-
-    // Also use Qt's font database for already-loaded system fonts
-    QFontDatabase database;
-    const QStringList families = database.families();
-
-    for (const QString& family : families) {
-        const QStringList styles = database.styles(family);
-        for (const QString& style : styles) {
-            // Try to find the font file path
-            // Note: Qt doesn't always expose this, so we may have duplicates
-            // or miss some fonts. This is a fallback.
-
-            // Check if we already have this font from directory scanning
-            bool found = false;
-            for (const auto& font : m_fonts) {
-                if (font.family == family && font.style == style) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                // Add font even without file path
-                FontInfo info;
-                info.family = family;
-                info.style = style;
-                info.filePath = QString(); // Unknown
-                info.format = "System";
-                info.weight = database.weight(family, style);
-                info.italic = database.italic(family, style);
-                m_fonts.push_back(info);
-            }
-        }
-    }
+    // No longer used - system fonts loaded via QFontDatabase::families()
 }
 
-void FontManager::scanDirectory(const QString& directory) {
+void FontManager::scanDirectory(const QString& directory, std::vector<FontInfo>& fonts) {
     QDir dir(directory);
     if (!dir.exists()) {
         return;
     }
-
-    // Recursively scan for font files
-    QStringList nameFilters;
-    nameFilters << "*.ttf" << "*.otf" << "*.ttc" << "*.TTF" << "*.OTF" << "*.TTC";
-
-    QDirIterator it(directory, nameFilters, QDir::Files, QDirIterator::Subdirectories);
+    
+    // Supported font extensions
+    QStringList filters;
+    filters << "*.ttf" << "*.otf" << "*.ttc" << "*.woff" << "*.woff2";
+    
+    QDirIterator it(directory, filters, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QString filePath = it.next();
-        addFontFromFile(filePath);
+        addFontFromFile(filePath, fonts);
     }
 }
 
-void FontManager::addFontFromFile(const QString& filePath) {
-    // Load font to get metadata
+void FontManager::addFontFromFile(const QString& filePath, std::vector<FontInfo>& fonts) {
+    QFileInfo fileInfo(filePath);
+    if (!fileInfo.exists() || !fileInfo.isFile()) {
+        return;
+    }
+    
+    // Add font to Qt's database and get the font ID
     int fontId = QFontDatabase::addApplicationFont(filePath);
     if (fontId == -1) {
         return; // Failed to load font
     }
-
+    
+    // Get families loaded from this font file
     QStringList families = QFontDatabase::applicationFontFamilies(fontId);
-    QFontDatabase database;
-
+    
+    // Determine format from extension
+    QString format = fileInfo.suffix().toUpper();
+    if (format == "TTF") format = "TrueType";
+    else if (format == "OTF") format = "OpenType";
+    else if (format == "TTC") format = "TrueType Collection";
+    else if (format == "WOFF" || format == "WOFF2") format = "Web Font";
+    
     for (const QString& family : families) {
-        const QStringList styles = database.styles(family);
+        QStringList styles = QFontDatabase::styles(family);
         for (const QString& style : styles) {
-            FontInfo info(family, style, filePath);
-            info.weight = database.weight(family, style);
-            info.italic = database.italic(family, style);
-
-            // Check for duplicates
+            // Check if we already have this font from system fonts
             bool duplicate = false;
-            for (const auto& existing : m_fonts) {
-                if (existing.family == info.family &&
-                    existing.style == info.style &&
-                    existing.filePath == info.filePath) {
+            for (const auto& existing : fonts) {
+                if (existing.family == family && existing.style == style) {
                     duplicate = true;
                     break;
                 }
             }
-
+            
             if (!duplicate) {
-                m_fonts.push_back(info);
+                FontInfo info;
+                info.family = family;
+                info.style = style;
+                info.filePath = filePath;
+                info.format = format;
+                info.weight = QFontDatabase::weight(family, style);
+                info.italic = QFontDatabase::italic(family, style);
+                fonts.push_back(info);
             }
         }
     }
-
-    // Remove the font from application fonts (we just needed metadata)
-    QFontDatabase::removeApplicationFont(fontId);
 }
 
 void FontManager::activateFont(const QString& fontId) {

@@ -9,6 +9,7 @@
 #include "models/FontListModel.h"
 #include "models/CollectionModel.h"
 #include "utils/Config.h"
+#include "utils/SettingsManager.h"
 #include "utils/Logger.h"
 
 int main(int argc, char *argv[]) {
@@ -33,6 +34,7 @@ int main(int argc, char *argv[]) {
     TypeNoodle::FontManager fontManager;
     TypeNoodle::FontListModel fontListModel;
     TypeNoodle::CollectionModel collectionModel;
+    TypeNoodle::SettingsManager settingsManager;
 
     // Create QML engine
     QQmlApplicationEngine engine;
@@ -41,6 +43,7 @@ int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("FontManager", &fontManager);
     engine.rootContext()->setContextProperty("_fontListModel", &fontListModel);
     engine.rootContext()->setContextProperty("_collectionModel", &collectionModel);
+    engine.rootContext()->setContextProperty("Settings", &settingsManager);
 
     // Load main QML file from module
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
